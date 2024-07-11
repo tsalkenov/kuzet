@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package scanner;
+
+option go_package = "pkg/api";
+
+message ScanPortRequest {
+  string host = 1;
+  int32 start_port = 2;
+  int32 end_port = 3;
+  repeated uint32 excluded_ports = 4;
+}
+
+message ScanPortResponse {
+  repeated uint32 open_ports = 1;
+}
+
+service PortScannerService {
+  rpc ScanPorts(ScanPortRequest) returns (ScanPortResponse);
+}

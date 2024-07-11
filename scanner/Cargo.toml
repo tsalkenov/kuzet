@@ -1,0 +1,19 @@
+[package]
+name = "scanner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rustscan = "2.3.0"
+async-std = "1.12.0"
+tonic = "0.12.0"
+tokio = { version = "1.38.0", features = ["rt-multi-thread", "macros"] }
+prost = "0.13.1"
+tonic-reflection = "0.12.0"
+
+[build-dependencies]
+tonic-build = { version = "0.12.0", features = ["prost"] }
+
+[[bin]]
+name = "scanner-service"
+path = "src/scanner/server.rs"
