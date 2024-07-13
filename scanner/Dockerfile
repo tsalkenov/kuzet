@@ -1,31 +1,32 @@
-FROM rustlang/rust:nightly-alpine AS rust
+# Use the official Rust image as the base image
+FROM rust:slim as builder
 
-WORKDIR /app
+# Create a new empty shell project
+RUN USER=root cargo new --bin scanner-service
+WORKDIR /scanner-service
 
-RUN apk add --no-cache musl-dev bash curl
-RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-RUN /usr/local/cargo/bin/cargo-binstall --no-confirm cargo-chef
+# Copy your manifests
+COPY ./Cargo.toml ./Cargo.toml
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./target ./target
+COPY ./src ./src
+COPY ./build.rs ./build.rs
 
-FROM rust as plan
+# This step will cache your dependencies
+RUN cargo build --release
+RUN rm src/*.rs
 
-COPY src src/
-COPY Cargo.toml .
+# Now that the dependencies are built, copy your source code
 
-RUN cargo chef prepare --recipe-path recipe.json
+# Build your application with the dependencies cached
+RUN rm ./target/release/deps/scanner_service*
+RUN cargo build --release
 
-FROM rust AS build
-COPY --from=plan /app/recipe.json recipe.json
+# Use a Debian image with the required GLIBC version to run the scanner service
+FROM debian:bookworm-slim
+COPY --from=builder /scanner-service/target/release/scanner-service /usr/local/bin/scanner-service
 
-RUN cargo chef cook --release --recipe-path recipe.json
+EXPOSE 50051
 
-COPY src src/
-COPY Cargo.toml .
-
-RUN cargo build --release && \
-    objcopy --compress-debug-sections target/release/scanner-service ./scanner-service
-
-FROM alpine as deploy
-
-WORKDIR /deploy
-
-COPY --from=build /app/scanner-service ./
+# Command to run the binary
+CMD ["scanner-service"]

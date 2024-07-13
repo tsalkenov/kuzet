@@ -76,7 +76,7 @@ impl PortScannerService for ScannerService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "127.0.0.1:50051".parse()?;
+    let addr = "0.0.0.0:50051".parse()?;
 
     println!("addr: {:?}", addr);
 
@@ -87,8 +87,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Server::builder()
         .add_service(service)
         .add_service(PortScannerServiceServer::new(
-            ScannerService::new(std::time::Duration::from_millis(1000),
-            )))
+            ScannerService::new(std::time::Duration::from_millis(1000))))
         .serve(addr)
         .await?;
 
