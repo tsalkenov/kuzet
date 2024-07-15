@@ -49,7 +49,7 @@ impl PortScannerService for ScannerService {
         );
 
         // TODO: by unsafe convert msg.excluded_ports with type Vec<u32> to u16 vector
-        let excluded_ports: Vec<u16> = msg.excluded_ports.iter().map(|&x| x as u16).collect();
+        let excluded_ports: Vec<u16> = msg.excluded_ports.iter().map(|&x| x.try_into()).collect();
 
         let _scanner =
             Scanner::new(
